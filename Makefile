@@ -84,6 +84,7 @@ DIRECTORIES := 	smtapi/src \
 		encodings \
 			encodings/MRCPSP \
 			encodings/Auction \
+			encodings/RLSAT \
 		parser \
 		controllers
 
@@ -195,6 +196,12 @@ SOURCES += $(addprefix encodings/Auction/,\
 	auction.cpp \
 	auctionencoding.cpp \
 )
+
+SOURCES += $(addprefix encodings/RLSAT/,\
+	RLSAT.cpp \
+	RLSATEncoding.cpp \
+)
+
 
 
 SOURCES += $(addprefix parser/, \
