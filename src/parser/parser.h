@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "mrcpsp.h"
 #include "auction.h"
+#include "rlsat.h"
 
 using namespace std;
 
@@ -25,6 +26,8 @@ MRCPSP * parseMRCPSPfromMM2(const string & filename);
 void parseMRCPSPSolution(istream & str,MRCPSP * instance,vector<int> &starts, vector<int> &modes);
 
 Auction * parseAuction(const string & filename);
+
+RLSAT * parseRLSAT(const string & filename);
 
 void findChar(istream & str, char c);
 int readAssingnment(istream & str);
