@@ -451,9 +451,22 @@ Auction * parseAuction(const string & filename){
         f >> aux >> S;
         f >> aux >> A;
         f >> aux >> TS;
+        f >> aux;
         RLSAT *rlsat = new RLSAT(U,S,A,TS);
 
         string line_s;
+        getline(f,line_s);
+
+
+        while(line_s!="#SEQ"){
+            rlsat->SU.push_back(vector<int>());
+            stringstream str(line_s);
+            int service;
+            while(str>>service)
+                rlsat->SU.back().push_back(service);
+            getline(f,line_s);
+        }
+
         getline(f,line_s);
 
         while(line_s!="#TSA(i)"){

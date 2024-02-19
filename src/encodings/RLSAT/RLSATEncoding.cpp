@@ -24,6 +24,9 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
     // s_a_seq agent a is assigned to some service of seq "seq"
     vector<vector<literal>> s(instance->A, vector<literal>(instance->SEQ.size()));
 
+    // su_s_h service s is done at time h
+    vector<vector<literal>> su(instance->S, vector<literal>(instance->TS));
+
     // declaration of meaningful x variables (i.e. only considering allowed assignments)
     for(int i = 0; i < instance->A; i++)
         for(int j = 0; j < instance->S; j++)
@@ -38,7 +41,13 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
            y[i][j]= (instance->r[i][j]==0) ? f->falseVar() : f->newBoolVar("y",i,j);
 
 
-     // declaration of meaningful reification variables s (i.e. not creating new vars for seqs of length 1)
+    // declaration of meaningful su variables (i.e. only considering allowed assignments)
+    for(int j = 0; j < instance->S; j++)
+        for(int k = 0; k < instance->TS; k++)
+            su[j][k]= (instance->TSS[j][k]) ? f->newBoolVar("su",j,k) : f->falseVar();
+
+
+    // declaration of meaningful reification variables s (i.e. not creating new vars for seqs of length 1)
     for(int i = 0; i < instance->A; i++)
         for(int q = 0; q < instance->SEQ.size(); q++)
             s[i][q] = (instance->SEQ[q].size()==1)
@@ -60,6 +69,21 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
     }
 
 
+
+
+    // 5b) Reification of time in which is done each service
+    //    su[j][k] <==> x[_][j][k]
+
+    for(int j = 0; j < instance->S; j++){
+        for(int k = 0; k < instance->TS; k++) {
+            clause caux = !su[j][k];
+            for(int i = 0; i < instance->A; i++){
+                f->addClause(!x[i][j][k] | su[j][k]);
+                caux |= x[i][j][k];
+            }
+            f->addClause(caux);
+        }
+    }
 
 
     //
@@ -88,9 +112,16 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
 
     // implicitly done in declaration of vars x
 
-    // 4) At most one service per user and timeslot => (or are they timeslot disjoint?)
+    // 4) At most one service per user and timeslot
 
-    // TODO
+    for(const vector<int> & v: instance->SU){
+        for(int k = 0; k < instance->TS; k++) {
+            vector<literal> vaux;
+            for (int j : v)
+                vaux.push_back(su[j][k]);
+            f->addAMO(vaux);
+        }
+    }
 
     // 6) Reification of agents assignments to services of seqs
 
@@ -110,6 +141,28 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
 
 
     // 7) Consistency enforcement of assignemnts to SEQs using constraint networks and soft constraints
+    int konstantrevenue = 0; // constant to deal with "extra" reward because the number of agents or services is limited.
+
+    for(int q = 0; q < instance->SEQ.size(); q++) {
+        if(instance->SEQ[q].size()!=1){
+            vector<literal> v;
+            for(int i = 0; i< instance->A; i++){
+                v.push_back(s[i][q]);
+            }
+            vector<literal> vout;
+            f->addSorting(v,vout,true,true);
+            int p = min(instance->A,instance->SEQ[q].size());
+            for(int i = 0; i < p; i++){
+                f->addSoftClause(!vout[p-i-1]);
+            }
+            konstantrevenue += instance->SEQ[q].size() - p;
+        }
+
+
+    }
+
+
+
 
     // 8) Revenue of assignemnts of agents to services according to their expertise
 
