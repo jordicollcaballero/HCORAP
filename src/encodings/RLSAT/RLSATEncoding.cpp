@@ -151,14 +151,12 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
             }
             vector<literal> vout;
             f->addSorting(v,vout,true,true);
-            int p = min(instance->A,instance->SEQ[q].size());
+            int p = min(instance->A,(int)instance->SEQ[q].size());
             for(int i = 0; i < p; i++){
-                f->addSoftClause(!vout[p-i-1]);
+                f->addSoftClause(!vout[i]);
             }
             konstantrevenue += instance->SEQ[q].size() - p;
         }
-
-
     }
 
 
@@ -166,9 +164,33 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
 
     // 8) Revenue of assignemnts of agents to services according to their expertise
 
+    for(int i = 0; i < instance->A; i++)
+        for(int j = 0; j < instance->S; j++)
+           if(instance->r[i][j]!=0)
+                f->addSoftClause(y[i][j],instance->r[i][j]);
+
+
     // 9) Adjustment of working hour per agents through sorting networks and soft constraints
 
-
+    for(int i = 0; i < instance->A; i++) {
+        vector<literal> v; // filtered input variables for the sorted
+        for(int j = 0; j < instance->S; j++){
+            if(y[i][j].v.id!=f->falseVar().id)
+                v.push_back(y[i][j]);
+        }
+        if(v.size()>instance->HN[i]){ // only deal with agents that can work more than their HN
+            vector<literal> vout;
+            int maxhours = instance->HN[i]+instance->HE[i];
+            f->addSorting(v,vout,true,true);
+            if(v.size()>maxhours)
+                f->addClause(!vout[maxhours]);
+            int p = min(maxhours,(int)vout.size());
+            for(int k = instance->HN[i]; k < p; k++){
+                f->addSoftClause(!vout[k]);
+            }
+            konstantrevenue -= p - instance->HN[i] ;
+        }
+    }
 
 
 

@@ -6,7 +6,7 @@
 #define RLSAT_RLSATENCODING_H
 
 #include "encoding.h"
-#include "RLSAT.h"
+#include "rlsat.h"
 
 class RLSATEncoding : public Encoding {
     RLSAT * instance;

@@ -217,7 +217,7 @@ CFLAGS := -w -std=c++11 -Wall -Wextra
 ifeq ($(DEBUG),1)
 CFLAGS+= -g -O0 -fbuiltin -fstack-protector-all
 else
-CFLAGS+= -O3
+CFLAGS+= -O3 
 endif
 
 ifeq ($(DEBUG),0)
