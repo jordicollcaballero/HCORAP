@@ -27,6 +27,7 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
     // su_s_h service s is done at time h
     vector<vector<literal>> su(instance->S, vector<literal>(instance->TS));
 
+
     // declaration of meaningful x variables (i.e. only considering allowed assignments)
     for(int i = 0; i < instance->A; i++)
         for(int j = 0; j < instance->S; j++)
@@ -34,6 +35,7 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
                 x[i][j][k]=  ((instance->r[i][j]==0) || !(instance->TSA[i][k]) || !(instance->TSS[j][k]))
                         ? f->falseVar()
                         : f->newBoolVar("x",i,j,k);
+
 
     // declaration of meaningful y variables (i.e. only considering allowed assignments)
      for(int i = 0; i < instance->A; i++)
@@ -61,14 +63,15 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
         for(int j = 0; j < instance->S; j++){
             clause caux = !y[i][j];
             for(int k = 0; k < instance->TS; k++) {
-                f->addClause(!x[i][j][k] | y[i][j]);
-                caux |= x[i][j][k];
+                if(x[i][j][k].v.id!=f->falseVar().id) {
+                    f->addClause(!x[i][j][k] | y[i][j]);
+                    caux |= x[i][j][k];
+                }
             }
-            f->addClause(caux);
+            if(y[i][j].v.id!=f->falseVar().id)
+                f->addClause(caux);
         }
     }
-
-
 
 
     // 5b) Reification of time in which is done each service
@@ -78,23 +81,26 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
         for(int k = 0; k < instance->TS; k++) {
             clause caux = !su[j][k];
             for(int i = 0; i < instance->A; i++){
-                f->addClause(!x[i][j][k] | su[j][k]);
-                caux |= x[i][j][k];
+                if(x[i][j][k].v.id!=f->falseVar().id) {
+                    f->addClause(!x[i][j][k] | su[j][k]);
+                    caux |= x[i][j][k];
+                }
             }
-            f->addClause(caux);
+            if(su[j][k].v.id!=f->falseVar().id)
+                f->addClause(caux);
         }
     }
-
 
     //
    // 1) All services must be attended exactly by one agent and only at one timeslot
     for(int j = 0; j < instance->S; j++){
         vector<literal> vaux;
         for(int i = 0; i < instance->A; i++)
-            vaux.insert(vaux.end(), x[i][j].begin(),  x[i][j].end());
+            for(int k = 0; k < x[i][j].size(); k++)
+                if(x[i][j][k].v.id!=f->falseVar().id)
+                    vaux.push_back(x[i][j][k]);
         f->addEO(vaux);
     }
-
 
         // 2) At most one service per agent and timeslot
 
@@ -102,11 +108,11 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
         for(int k = 0; k < instance->TS; k++) {
             vector<literal> vaux;
             for (int j = 0; j < instance->S; j++)
-                vaux.push_back(x[i][j][k]);
+                if(x[i][j][k].v.id!=f->falseVar().id)
+                    vaux.push_back(x[i][j][k]);
             f->addAMO(vaux);
         }
     }
-
 
     // 3) Agents only perform services in their allowed timeslots
 
@@ -118,11 +124,11 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
         for(int k = 0; k < instance->TS; k++) {
             vector<literal> vaux;
             for (int j : v)
-                vaux.push_back(su[j][k]);
+                if(su[j][k].v.id!=f->falseVar().id)
+                    vaux.push_back(su[j][k]);
             f->addAMO(vaux);
         }
     }
-
     // 6) Reification of agents assignments to services of seqs
 
     for(int i = 0; i < instance->A; i++){
@@ -130,14 +136,16 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
             if(instance->SEQ[q].size()!=1)  {
                 clause caux = !s[i][q];
                 for(int j:instance->SEQ[q]) {
-                    f->addClause(s[i][q] | !y[i][j]);
-                    caux |= y[i][j];
+                    if(y[i][j].v.id!=f->falseVar().id) {
+                        f->addClause(s[i][q] | !y[i][j]);
+                        caux |= y[i][j];
+                    }
                 }
-                f->addClause(caux);
+                if(s[i][q].v.id!=f->falseVar().id)
+                    f->addClause(caux);
             }
         }
     }
-
 
 
     // 7) Consistency enforcement of assignemnts to SEQs using constraint networks and soft constraints
@@ -161,7 +169,6 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
 
 
 
-
     // 8) Revenue of assignemnts of agents to services according to their expertise
 
     for(int i = 0; i < instance->A; i++)
@@ -182,19 +189,17 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
             vector<literal> vout;
             int maxhours = instance->HN[i]+instance->HE[i];
             f->addSorting(v,vout,true,true);
-            if(v.size()>maxhours)
+            if(v.size()>maxhours) {
                 f->addClause(!vout[maxhours]);
+            }
             int p = min(maxhours,(int)vout.size());
             for(int k = instance->HN[i]; k < p; k++){
-                f->addSoftClause(!vout[k]);
+                f->addSoftClause(!vout[k],-instance->P); //TODO check P
             }
             konstantrevenue -= p - instance->HN[i] ;
         }
     }
 
-
-
-
-
+    return f;
 
 }

@@ -17,6 +17,8 @@ public:
     vector<int> HN; // Weekly working hours per agent
     vector<int> HE; // Allowed weekly extra working hours per agent
 
+    void print();
+
     RLSAT(int U, int S, int A, int TS);
 };
 

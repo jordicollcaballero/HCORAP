@@ -457,8 +457,11 @@ Auction * parseAuction(const string & filename){
         string line_s;
         getline(f,line_s);
 
-
         while(line_s!="#SEQ"){
+            if(line_s.empty()) {
+                getline(f,line_s);
+                continue;
+            }
             rlsat->SU.push_back(vector<int>());
             stringstream str(line_s);
             int service;
@@ -494,6 +497,8 @@ Auction * parseAuction(const string & filename){
         for(int i = 0; i < A; i++)
             for(int j = 0; j < S; j++)
                 f >> rlsat->r[i][j];
+        f>>aux;
+        f>>rlsat->P;
 
         f >> aux;
         for(int i = 0; i < A; i++)

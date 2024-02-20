@@ -229,9 +229,12 @@ void DimacsFileEncoder::createMaxSATFile(std::ostream & os, SMTFormula * f) cons
 	}
 
 	int whard = f->getHardWeight();
-	os << "p wcnf " << f->getNBoolVars() << " " << f->getNClauses() + f->getNSoftClauses() << " " << whard << std::endl;
+    //CHANGE IN THE API for RLSAT
+	//os << "p wcnf " << f->getNBoolVars() << " " << f->getNClauses() + f->getNSoftClauses() << " " << whard << std::endl;
 	for(const clause & c : f->getClauses()){
-		os << whard << " ";
+        //CHANGE IN THE API for RLSAT
+		//os << whard << " ";
+        os << "h ";
 		for(const literal & l : c.v){
 			if(l.arith){
 				std::cerr << "Error: attempted to add arithmetic literal to SAT encodign"<< std::endl;
