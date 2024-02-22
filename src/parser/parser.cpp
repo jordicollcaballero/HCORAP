@@ -442,6 +442,7 @@ Auction * parseAuction(const string & filename){
         }
         string aux;
         int auxint;
+        string line_s;
 
         int U;
         int S;
@@ -452,11 +453,11 @@ Auction * parseAuction(const string & filename){
         f >> aux >> A;
         f >> aux >> TS;
         f >> aux;
-        RLSAT *rlsat = new RLSAT(U,S,A,TS);
-
-        string line_s;
         getline(f,line_s);
 
+        RLSAT *rlsat = new RLSAT(U,S,A,TS);
+
+        getline(f,line_s);
         while(line_s!="#SEQ"){
             if(line_s.empty()) {
                 getline(f,line_s);
@@ -471,7 +472,6 @@ Auction * parseAuction(const string & filename){
         }
 
         getline(f,line_s);
-
         while(line_s!="#TSA(i)"){
             rlsat->SEQ.push_back(vector<int>());
             stringstream str(line_s);
@@ -492,14 +492,12 @@ Auction * parseAuction(const string & filename){
                 f >> auxint;
                 rlsat->TSS[i][j]=auxint==1;
             }
-
         f >> aux;
         for(int i = 0; i < A; i++)
             for(int j = 0; j < S; j++)
                 f >> rlsat->r[i][j];
         f>>aux;
         f>>rlsat->P;
-
         f >> aux;
         for(int i = 0; i < A; i++)
             f >> rlsat->HN[i];
