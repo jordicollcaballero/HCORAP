@@ -7,13 +7,15 @@
 
 using namespace std;
 
-RLSATEncoding::RLSATEncoding(RLSAT * instance) {
-    this->instance = instance;
+RLSATEncoding::RLSATEncoding(RLSAT * instance, bool strat) : strat(strat), instance(instance){
+
 }
 
 SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
 
     SMTFormula * f = new SMTFormula();
+
+    int totalSoft=0;
 
     // x_a_s_h agent a is assigned to service s at timeslot h
     vector<vector<vector<literal>>> x(instance->A,vector<vector<literal>>(instance->S,vector<literal>(instance->TS)));
@@ -92,15 +94,16 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
     }
 
     //
-   // 1) All services must be attended exactly by one agent and only at one timeslot
+   // 1) All services must be attended by most one agent and at most at one timeslot
     for(int j = 0; j < instance->S; j++){
         vector<literal> vaux;
         for(int i = 0; i < instance->A; i++)
             for(int k = 0; k < x[i][j].size(); k++)
                 if(x[i][j][k].v.id!=f->falseVar().id)
                     vaux.push_back(x[i][j][k]);
-        f->addEO(vaux);
+        f->addAMO(vaux);
     }
+
 
         // 2) At most one service per agent and timeslot
 
@@ -162,6 +165,7 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
             int p = min(instance->A,(int)instance->SEQ[q].size());
             for(int i = 0; i < p; i++){
                 f->addSoftClause(!vout[i]);
+                totalSoft++;
             }
             konstantrevenue += instance->SEQ[q].size() - p;
         }
@@ -173,8 +177,10 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
 
     for(int i = 0; i < instance->A; i++)
         for(int j = 0; j < instance->S; j++)
-           if(instance->r[i][j]!=0)
-                f->addSoftClause(y[i][j],instance->r[i][j]);
+           if(instance->r[i][j]!=0) {
+               f->addSoftClause(y[i][j], instance->r[i][j]);
+               totalSoft+=instance->r[i][j];
+           }
 
 
     // 9) Adjustment of working hour per agents through sorting networks and soft constraints
@@ -194,11 +200,27 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
             }
             int p = min(maxhours,(int)vout.size());
             for(int k = instance->HN[i]; k < p; k++){
-                f->addSoftClause(!vout[k],-instance->P); //TODO check P
+                f->addSoftClause(!vout[k],-instance->P);
+                totalSoft+=-instance->P;
             }
             konstantrevenue -= p - instance->HN[i] ;
         }
     }
+
+
+    // 1.2) All services must be attended at some time slot
+    for(int j = 0; j < instance->S; j++){
+        vector<literal> v;
+        for(int k=0; k < instance->TS; k++)
+            if(su[j][k].v.id!=f->falseVar().id)
+                v.push_back(su[j][k]);
+        if(strat)
+            f->addSoftClause(v,totalSoft+1);
+        else
+            f->addClause(v);
+    }
+
+    cout << "c " << totalSoft << " " << konstantrevenue << endl;
 
     return f;
 

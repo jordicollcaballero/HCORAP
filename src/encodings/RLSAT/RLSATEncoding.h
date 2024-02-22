@@ -10,8 +10,9 @@
 
 class RLSATEncoding : public Encoding {
     RLSAT * instance;
+    bool strat;
 public:
-    RLSATEncoding(RLSAT * instance);
+    RLSATEncoding(RLSAT * instance, bool strat);
 
     SMTFormula *  encode(int lb = INT_MIN, int ub = INT_MAX);
 };
