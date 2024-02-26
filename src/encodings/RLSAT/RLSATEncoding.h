@@ -11,10 +11,17 @@
 class RLSATEncoding : public Encoding {
     RLSAT * instance;
     bool strat;
+    vector<vector<vector<literal>>> x;
+    vector<vector<literal>> y;
+    vector<vector<literal>> s;
+    vector<vector<literal>> su;
+    int totalSoft, konstantrevenue;
 public:
     RLSATEncoding(RLSAT * instance, bool strat);
 
     SMTFormula *  encode(int lb = INT_MIN, int ub = INT_MAX);
+
+    void checkSolution(const string & filename);
 };
 
 
