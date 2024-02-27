@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
         c.run();
     }
     else
-        encoding->checkSolution(pargs->getArgument(2));
+        encoding->checkSolution(pargs->getArgument(1));
 
     return 0;
 }

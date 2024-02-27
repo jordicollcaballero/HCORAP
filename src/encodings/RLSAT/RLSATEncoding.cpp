@@ -99,7 +99,7 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
     for(int j = 0; j < instance->S; j++){
         vector<literal> vaux;
         for(int i = 0; i < instance->A; i++)
-            for(int k = 0; k < x[i][j].size(); k++)
+            for(int k = 0; k < instance->TS; k++)
                 if(x[i][j][k].v.id!=f->falseVar().id)
                     vaux.push_back(x[i][j][k]);
         f->addAMO(vaux);
@@ -123,8 +123,7 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
     // implicitly done in declaration of vars x
 
     // 4) At most one service per user and timeslot
-
-    for(const vector<int> & v: instance->SU){
+    /*for(const vector<int> & v: instance->SU){
         for(int k = 0; k < instance->TS; k++) {
             vector<literal> vaux;
             for (int j : v)
@@ -132,9 +131,10 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
                     vaux.push_back(su[j][k]);
             f->addAMO(vaux);
         }
-    }
-    // 6) Reification of agents assignments to services of seqs
+    }*/ //TODO uncomment
 
+
+    // 6) Reification of agents assignments to services of seqs
     for(int i = 0; i < instance->A; i++){
         for(int q = 0; q < instance->SEQ.size(); q++) {
             if(instance->SEQ[q].size()!=1)  {
@@ -241,6 +241,7 @@ void RLSATEncoding::checkSolution(const string & filename){
         if(auxstr == "s"){
             ifs >> auxstr;
             if(auxstr=="UNSATISFIABLE"){
+                ifs.close();
                 cout << "SKIP: UNSATISFIABLE"  << endl;
                 exit(0);
             }
@@ -248,12 +249,13 @@ void RLSATEncoding::checkSolution(const string & filename){
                 solved=true;
         }
         else if (auxstr=="o"){
-            ifs >> optimal;
+            ifs >> auxstr;
+            if(auxstr!="18446744073709551615") //Evalmaxsat sometimes reports a ridiculously big o line
+                optimal=std::stoi(auxstr);
         }
         else{
             model.clear();
             model.push_back(false); //Start indexing at 1
-            ifs >> c;
             ifs >> c;
             while(c=='1' || c=='0'){
                 model.push_back(c=='1');
@@ -263,6 +265,7 @@ void RLSATEncoding::checkSolution(const string & filename){
 
         do { ifs >> auxstr; } while (!ifs.eof() && auxstr != "s" && auxstr != "o" && auxstr != "v");
     }
+    ifs.close();
     if(!solved){
         cout << "SKIP: NOT SOLVED"  << endl;
         exit(0);
@@ -279,10 +282,12 @@ void RLSATEncoding::checkSolution(const string & filename){
     int checkOptimal=0;
     int nNotDone=0;
 
+
     // x_a_s_h agent a is assigned to service s at timeslot h
     // y_a_s agent a is assigned to service s (at some time slot)
     // s_a_seq agent a is assigned to some service of seq "seq"
     // su_s_h service s is done at time h
+    encode();
 
     for(int j = 0; j < instance->S; j++){
         int nDone=0;
@@ -293,9 +298,12 @@ void RLSATEncoding::checkSolution(const string & filename){
             }
         }
         cout << "==> Check service " << j << " done at most once:" << (nDone<=1 ? "OK" : "FAIL") << endl;
-        if(nDone==0)
+        if(nDone==0) {
             nNotDone++;
+            cout << "==> Service " << j << " not done." << endl;
+        }
     }
+
 
     bool ok=true;
     for(const vector<int> & v: instance->SU){
@@ -318,7 +326,7 @@ void RLSATEncoding::checkSolution(const string & filename){
         for (int k = 0; k < instance->TS; k++) {
             int nDone = 0;
             for (int j = 0; j < instance->S; j++) {
-                if (model[x[j][i][k].v.id]) {
+                if (model[x[i][j][k].v.id]) {
                     nDone++;
                     nWork++;
                 }
@@ -326,7 +334,7 @@ void RLSATEncoding::checkSolution(const string & filename){
             ok=ok&&nDone<=1;
         }
         cout << "==> Agent " << i << " at most one service at a time:" << (ok ? "OK" : "FAIL") << endl;
-        cout << "==> Agent " << i << " does not exceed his maximum working hours: " << (nWork<=instance->HN[i]+instance->HE[i] ? "OK" : "FAIL_H") << endl;
+        cout << "==> Agent " << i << " does not exceed his maximum working hours: " << (nWork<=instance->HN[i]+instance->HE[i] ? "OK" : "FAIL") << endl;
         if(nWork>instance->HN[i])
             checkOptimal+=(nWork-instance->HN[i])*instance->P;
     }
@@ -355,11 +363,11 @@ void RLSATEncoding::checkSolution(const string & filename){
             }
         }
         checkOptimal+=instance->SEQ[q].size()-nWorking;
-        cout << "==> Check not too many agents woring in SEQ " << q << ":" << (nWorking<=instance->SEQ[q].size() ? "OK" : "FAIL") << endl;
+        cout << "==> Check not too many agents working in SEQ " << q << ":" << (nWorking<=instance->SEQ[q].size() ? "OK" : "FAIL") << endl;
     }
     int optimalMax = totalSoft - (optimal%(totalSoft+1)) + konstantrevenue;
-    cout << "==> Check optimal :" << (optimalMax==checkOptimal?"OK":"FAIL_H") << endl;
+    cout << "==> Check optimal: " << (optimalMax==checkOptimal?"OK":"FAIL") << endl;
     cout << "N Undone services: " << nNotDone << endl;
-    cout << "Cost: " << optimalMax << endl;
+    cout << "Revenue: " << optimalMax << endl;
 
 }
