@@ -123,7 +123,7 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
     // implicitly done in declaration of vars x
 
     // 4) At most one service per user and timeslot
-    /*for(const vector<int> & v: instance->SU){
+    for(const vector<int> & v: instance->SU){
         for(int k = 0; k < instance->TS; k++) {
             vector<literal> vaux;
             for (int j : v)
@@ -131,7 +131,7 @@ SMTFormula *  RLSATEncoding::encode(int lb, int ub) {
                     vaux.push_back(su[j][k]);
             f->addAMO(vaux);
         }
-    }*/ //TODO uncomment
+    }
 
 
     // 6) Reification of agents assignments to services of seqs
@@ -250,7 +250,7 @@ void RLSATEncoding::checkSolution(const string & filename){
         }
         else if (auxstr=="o"){
             ifs >> auxstr;
-            if(auxstr!="18446744073709551615") //Evalmaxsat sometimes reports a ridiculously big o line
+            if(auxstr!="18446744073709551615") //Evalmaxsat sometimes reports this unsigned long max o line
                 optimal=std::stoi(auxstr);
         }
         else{
