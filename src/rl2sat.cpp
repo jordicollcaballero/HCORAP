@@ -18,7 +18,8 @@ int main(int argc, char **argv) {
             = new Arguments<ProgramArg>(
                     //Program arguments
                     {
-                            arguments::arg("filename","Instance file path.")
+                            arguments::arg("filename","Instance file path."),
+                            arguments::arg("solutionname","Solution file path.")
                     },1,{
                     arguments::bop("S","strat",STRATIFIED,false,
                                            "If true, allow to not do some services (soft constraint). Default: false.")
@@ -28,8 +29,12 @@ int main(int argc, char **argv) {
 
     RLSAT * instance = parser::parseRLSAT(pargs->getArgument(0));
     RLSATEncoding * encoding = new RLSATEncoding(instance, pargs->getBoolOption(STRATIFIED));
-    BasicController c(sargs,encoding,false,0,INT_MAX);
-    c.run();
+    if(pargs->getNArguments()==1) {
+        BasicController c(sargs, encoding, false, 0, INT_MAX);
+        c.run();
+    }
+    else
+        encoding->checkSolution(pargs->getArgument(2));
 
     return 0;
 }

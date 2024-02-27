@@ -74,7 +74,7 @@ def main():
     
     TSA = []
     for a in range(A):
-        hours=randint(4, 12) #Que treballin!
+        hours=randint(4, 12)
         if randint(0,1):
             TSA.append(([1]*hours+[0]*(12-hours))*5)
         else:

@@ -234,15 +234,18 @@ void RLSATEncoding::checkSolution(const string & filename){
     ifs.open(filename);
     string auxstr;
     int optimal=-1;
+    bool solved=false;
     char c;
     do { ifs >> auxstr; } while (!ifs.eof() && auxstr != "s" && auxstr != "o" && auxstr != "v");
     while(!ifs.eof()) {
         if(auxstr == "s"){
             ifs >> auxstr;
             if(auxstr=="UNSATISFIABLE"){
-                cout << "UNSATISFIABLE"  << endl;
+                cout << "SKIP: UNSATISFIABLE"  << endl;
                 exit(0);
             }
+            else if(auxstr=="OPTIMUM")
+                solved=true;
         }
         else if (auxstr=="o"){
             ifs >> optimal;
@@ -259,6 +262,10 @@ void RLSATEncoding::checkSolution(const string & filename){
         }
 
         do { ifs >> auxstr; } while (!ifs.eof() && auxstr != "s" && auxstr != "o" && auxstr != "v");
+    }
+    if(!solved){
+        cout << "SKIP: NOT SOLVED"  << endl;
+        exit(0);
     }
     if(optimal<0){
         cout << "ERROR: optimal not read" << endl;
