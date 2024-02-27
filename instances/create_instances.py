@@ -30,7 +30,8 @@ def main():
     gender_labels = ['M','F']
     religion_labels = ['A','B','C']
     languages_labels = ["spanish", "catalan", "english"]
-    type_labels = ["","nurse", "cpr", "physio", "doctor"]
+    type_labels_agents = ["basic", "nurse", "cpr", "physio", "doctor"]
+    type_labels_services = ["basic","basic","basic", "nurse", "cpr", "physio", "doctor"]
     race_labels = ["white", "latin-american", "black", "asian"]
     
     lat =[
@@ -65,7 +66,7 @@ def main():
     
     df_agents['Id'] = [x for x in range(A)]
     df_agents['Age'] = [randint(25, 60) for x in range(A)]
-    df_agents['Qualifications'] = create_random_labels(type_labels, 0, 3, A)
+    df_agents['Qualifications'] = create_random_labels(type_labels_agents, 0, 3, A)
     df_agents['Location'] = [";".join(x) for x in zip(*[sample(lat,A), sample(long,A)])]
     df_agents['Region'] = np.random.choice(religion_labels, A)
     df_agents['Gender'] = np.random.choice(gender_labels, A)
@@ -95,10 +96,9 @@ def main():
     df_usuaris['Race'] = np.random.choice(race_labels, U)
     
     #Serveis
-    
     def serviceTimeSlot(dist=dist):
         repetitions = 1
-        duration = randint(1, 4)
+        duration = randint(2, 5)
         slot = randint(0,99)
         for i in range(len(dist)):
             if slot<dist[i]:
@@ -108,14 +108,28 @@ def main():
                 break
         service = [day]*repetitions+[[0]*12]*(5-repetitions)
         shuffle(service)
-        return service
+        return np.array(service)
     
-    df_serveis = pd.DataFrame()
+    def serviceCreation():
+        df_serveis = pd.DataFrame()
     
-    df_serveis['Id'] = [x for x in range(S)]
-    df_serveis['user'] = [sample(list(df_usuaris['Id']),1)[0] for x in range(S)]
-    df_serveis['Type'] = np.random.choice(type_labels, S)#create_random_labels(type_labels, 0, 1, S)
-    df_serveis['TimeSlot'] = [serviceTimeSlot() for x in range(S)]
+        df_serveis['Id'] = [x for x in range(S)]
+        df_serveis['user'] = [sample(list(df_usuaris['Id']),1)[0] for x in range(S)]
+        df_serveis['Type'] = np.random.choice(type_labels_services, S)#create_random_labels(type_labels, 0, 1, S)
+        df_serveis['TimeSlot'] = [serviceTimeSlot() for x in range(S)]
+        return df_serveis
+    
+    df_serveis = None
+    
+    while df_serveis is None:
+        df_serveis = serviceCreation()
+        t = df_serveis[['user','TimeSlot']].groupby('user').sum().reset_index()
+        valid = True
+        for i in range(t.shape[0]):
+            if np.sum(t['TimeSlot'][i] > 2) > 0:
+                valid = False
+        if valid == False:
+            df_serveis = None
     
     SU = df_serveis[['user','Id']].groupby(by=['user']).agg(list)['Id'].to_list()
     
