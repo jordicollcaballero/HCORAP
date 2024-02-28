@@ -66,7 +66,7 @@ def main():
     
     df_agents['Id'] = [x for x in range(A)]
     df_agents['Age'] = [randint(25, 60) for x in range(A)]
-    df_agents['Qualifications'] = create_random_labels(type_labels_agents, 0, 3, A)
+    df_agents['Qualifications'] = create_random_labels(type_labels_agents, 1, 3, A)
     df_agents['Location'] = [";".join(x) for x in zip(*[sample(lat,A), sample(long,A)])]
     df_agents['Region'] = np.random.choice(religion_labels, A)
     df_agents['Gender'] = np.random.choice(gender_labels, A)
