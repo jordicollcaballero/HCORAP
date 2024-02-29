@@ -311,14 +311,15 @@ void RLSATEncoding::checkSolution(const string & filename){
             int nDone=0;
             for (int j : v) {
                 for(int i = 0; i < instance->A; i++) {
-                    if(model[x[i][j][k].v.id])
+                    if(model[x[i][j][k].v.id]) {
                         nDone++;
+                    }
                 }
             }
             ok=ok&&nDone<=1;
         }
     }
-    cout << "==> Check all users at most one service at a time" << (ok ? "OK" : "FAIL") << endl;
+    cout << "==> Check all users at most one service at a time:" << (ok ? "OK" : "FAIL") << endl;
 
     for(int i=0; i < instance->A; i++) {
         bool ok=true;
