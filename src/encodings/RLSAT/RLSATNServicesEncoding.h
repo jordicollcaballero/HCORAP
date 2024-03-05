@@ -9,7 +9,7 @@
 #include "rlsat.h"
 
 
-class RLSATNServicesEncoding {
+class RLSATNServicesEncoding : public Encoding{
     RLSAT * instance;
     vector<vector<vector<literal>>> x;
     vector<vector<literal>> y;
