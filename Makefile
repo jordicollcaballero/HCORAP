@@ -200,6 +200,7 @@ SOURCES += $(addprefix encodings/Auction/,\
 SOURCES += $(addprefix encodings/RLSAT/,\
 	rlsat.cpp \
 	RLSATEncoding.cpp \
+	RLSATNServicesEncoding.cpp\
 )
 
 

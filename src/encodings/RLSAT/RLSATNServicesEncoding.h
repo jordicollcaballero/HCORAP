@@ -1,21 +1,20 @@
 //
-// Created by jordic on 06/02/24.
+// Created by jordic on 05/03/24.
 //
 
-#ifndef RLSAT_RLSATENCODING_H
-#define RLSAT_RLSATENCODING_H
+#ifndef RLSAT_RLSATNSERVICESENCODING_H
+#define RLSAT_RLSATNSERVICESENCODING_H
 
 #include "encoding.h"
 #include "rlsat.h"
 
-class RLSATEncoding : public Encoding {
+
+class RLSATNServicesEncoding {
     RLSAT * instance;
-    bool strat;
     vector<vector<vector<literal>>> x;
     vector<vector<literal>> y;
-    vector<vector<literal>> s;
     vector<vector<literal>> su;
-    int totalSoft, totalSoftStrat, konstantrevenue;
+    int totalSoftStrat;
 
     vector<clause> softClauses;
     vector<int> weights;
@@ -25,7 +24,7 @@ class RLSATEncoding : public Encoding {
 
 
 public:
-    RLSATEncoding(RLSAT * instance, bool strat);
+    RLSATNServicesEncoding(RLSAT * instance);
 
     SMTFormula *  encode(int lb = INT_MIN, int ub = INT_MAX);
 
@@ -33,4 +32,4 @@ public:
 };
 
 
-#endif //RLSAT_RLSATENCODING_H
+#endif //RLSAT_RLSATNSERVICESENCODING_H
