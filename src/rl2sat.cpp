@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     RLSAT * instance = parser::parseRLSAT(pargs->getArgument(0));
 
     if(pargs->getBoolOption(NSERVICES)) {
-        RLSATEncoding *encoding =  new RLSATEncoding(instance, pargs->getBoolOption(STRATIFIED));
+        RLSATNServicesEncoding *encoding =  new RLSATNServicesEncoding(instance);
         if (pargs->getNArguments() == 1) {
             BasicController c(sargs, encoding, false, 0, INT_MAX);
             c.run();
@@ -42,12 +42,13 @@ int main(int argc, char **argv) {
             encoding->checkSolution(pargs->getArgument(1));
     }
     else{
-        RLSATNServicesEncoding *encoding =  new RLSATNServicesEncoding(instance);
+        RLSATEncoding *encoding =  new RLSATEncoding(instance, pargs->getBoolOption(STRATIFIED));
         if (pargs->getNArguments() == 1) {
             BasicController c(sargs, encoding, false, 0, INT_MAX);
             c.run();
         } else
             encoding->checkSolution(pargs->getArgument(1));
+
     }
 
     return 0;
