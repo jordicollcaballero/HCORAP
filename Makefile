@@ -82,9 +82,7 @@ DIRECTORIES := 	smtapi/src \
 			smtapi/src/controllers \
 			smtapi/src/solvers \
 		encodings \
-			encodings/MRCPSP \
-			encodings/Auction \
-			encodings/RLSAT \
+			encodings/HCORAP \
 		parser \
 		controllers
 
@@ -181,26 +179,10 @@ SOURCES += $(addprefix smtapi/src/, \
 	encoding.cpp \
 )
 
-SOURCES += $(addprefix encodings/MRCPSP/,\
-	mrcpsp.cpp \
-	mrcpspencoding.cpp \
-	smttimeencoding.cpp \
-	smttaskencoding.cpp \
-	omtsatpbencoding.cpp \
-	omtsoftpbencoding.cpp \
-	mrcpspsatencoding.cpp \
-	order.cpp \
-	doubleorder.cpp \
-)
-SOURCES += $(addprefix encodings/Auction/,\
-	auction.cpp \
-	auctionencoding.cpp \
-)
-
-SOURCES += $(addprefix encodings/RLSAT/,\
-	rlsat.cpp \
-	RLSATEncoding.cpp \
-	RLSATNServicesEncoding.cpp\
+SOURCES += $(addprefix encodings/HCORAP/,\
+	hcorap.cpp \
+	HCORAPEncoding.cpp \
+	HCORAPNServicesEncoding.cpp\
 )
 
 
@@ -287,22 +269,19 @@ OBJS := $(OBJS:%.cc=$(BUILDROOT)/%.o)
 SOURCES := $(addprefix src/, $(SOURCES))
 
 
-.PHONY: all mrcpsp2smt mmkp2smt rcpspt2smt rcpspmax2smt mrcpspmax2smt mspsp2smt auction2smt rl2sat checkmrcpsp checkmspsp checkrcpspmax checkmrcpspmax checkmmkp checkrcpspt test clinics2smt
+.PHONY: all hcorap2sat 
 
 .SECONDARY: $(OBJS)
 
 
-all: mrcpsp2smt auction2smt rl2sat
+all: hcorap2sat
 
 clean:
 	@rm -rf build
 	@rm -rf bin
 
-mrcpsp2smt: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/mrcpsp2smt.o $(BINROOT)/mrcpsp2smt
 
-auction2smt: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/auction2smt.o $(BINROOT)/auction2smt
-
-rl2sat: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/rl2sat.o $(BINROOT)/rl2sat
+hcorap2sat: $(BUILDROOT) $(BINROOT) $(addprefix $(BUILDROOT)/, $(DIRECTORIES)) $(BUILDROOT)/hcorap2sat.o $(BINROOT)/hcorap2sat
 
 # Compile the binary by calling the compiler with cflags, lflags, and any libs (if defined) and the list of objects.
 $(BINROOT)/%: $(OBJS) $(BUILDROOT)/%.o

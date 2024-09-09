@@ -229,10 +229,10 @@ void DimacsFileEncoder::createMaxSATFile(std::ostream & os, SMTFormula * f) cons
 	}
 
 	int whard = f->getHardWeight();
-    //CHANGE IN THE API for RLSAT
+    //CHANGE IN THE API for HCORAP
 	//os << "p wcnf " << f->getNBoolVars() << " " << f->getNClauses() + f->getNSoftClauses() << " " << whard << std::endl;
 	for(const clause & c : f->getClauses()){
-        //CHANGE IN THE API for RLSAT
+        //CHANGE IN THE API for HCORAP
 		//os << whard << " ";
         os << "h ";
 		for(const literal & l : c.v){
