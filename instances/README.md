@@ -1,4 +1,4 @@
-#HCORAP instance generation
+# HCORAP instance generation
 
 The HCORAP instances are randomly generated with the python script `create_instances.py`, that is run as follows:
 
