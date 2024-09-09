@@ -13,3 +13,9 @@ Once compiled, an instance `INSTANCE.txt` can be encoded into MaxSAT by running:
 ./bin/release/hcorap2sat -e=1 -f=dimacs -S=0 INSTANCE.txt
 ```
 which generates an encoding using the MaxSAT version of DIMACS standard, version post-2022 edition of the MaxSAT evaluation described [here](https://maxsat-evaluations.github.io/2022/rules.html#input).
+
+The instance is written to standard output channel. If, for instance, saved to a file named `instance.wcnf`, it can be solved e.g. with WMaxCDCL by running:
+
+```sh
+wmaxcdcl_static instance.wcnf
+```
