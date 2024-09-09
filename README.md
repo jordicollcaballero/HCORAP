@@ -1,3 +1,7 @@
+#General description
+This project contains the source code and the instances used in the paper Optimizing Resource Allocation in Home Care Services
+using MaxSAT.
+
 #Instructions to generate MaxSAT instances
 
 The HCORAP instances from the instance folder can be encoded into MaxSAT using the `hcorap2sat` program. This program is compiled by running:
