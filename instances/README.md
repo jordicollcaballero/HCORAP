@@ -10,3 +10,5 @@ In the paper, N_USERS takes values 30 and 40, N_AGENTS takes values 10, 15, 20 a
 The script `genTXT.sh` generates a random set of instances with the same parameters than in the experimental section of the paper.
 
 These instances are specified in an ad-hoc plain-text format for the HCORAP. They can be encoded into MaxSAT formulas using the `hcorap2sat` binary file (see README in the root folder).
+
+The directory `paperInstances` contains the 400 instances used in the paper.
